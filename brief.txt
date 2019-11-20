@@ -1,0 +1,121 @@
+In this coding challenge, you will be asked to use what you have learned so far
+to try and "computationally" solve a realistic problem in materials science.
+
+The problem is the following.
+
+A materials exists that is able to trap bacteria on it. This coating can be deposited as a series of N stripes of 
+width d, and N+1 stripes (without coating) of width d2, so that N*d + (N+1)*d2 = L, L being the size of the 
+surface, a square of L*L. We would like to understand what is the best value in terms of N and d that will allow 
+to make bacteria die faster.
+
+Why would bacteria die faster when trapped? Mainly, because they have less space to find food required to survive.
+At the same time, bacteria that are close to each other can form stronger colonies, in the sense that the probability
+for a bacteria to die because it has no food will depend on how many are present in its colony, so over-concentrating them in a single region
+might not be the best thing to do.
+
+Your "playground" for testing is a model where you have different colonies of bacteria (we'll specify it in a 
+second), residing on a square surface (your material) which has N stripes each of size d of coating. Beside
+bacteria, the surface also contains food.
+
+
+You are given the following rules for the behaviour of bacteria.
+
+1) Each bacteria have a rate k_die that it will die. This means that in a time-step dt, the bacteria will die
+   with probability k_die( xx ). xx is the number of neighbours for a certain bacteria. This number is the 
+   number of bacteria whose Voronoi cell (considering only bacteria of the same colony) is adjacent to the 
+   Voronoi cell of the bacteria (i.e., they share an edge). The formula for it is
+   k_die( xx ) = k_die( 0 ) / xx 
+
+2) A bacteria can duplicate with a rate k_replicate.
+
+3) A bacteria can move with rate k_move. If it moves, its displacement in the x and y direction is taken 
+   taken from a Gaussian probability with mean = X and standard deviation = sigma  normal( mean, std ) -
+   note that DX and DY must be taken independently.
+   Importantly, if a bacteria is inside a coated region, the movement is allowed only if it keeps the bacteria 
+   in the coated region and rejected otherwise. A movement is also rejected if it brings the bacteria outside 
+   the surface.
+
+In practice, this means that at each step of evolution, you should pick for every bacteria 1) or 2) or 3) based
+on the formula
+
+p_i = k_i / sum(i) k_i, i=1,3 and p_i is the probability to do the corresponding action
+
+
+4) If a bacteria lands within a distance R_eat of a piece of food, it eats it (immediately, in the same step). 
+   A bacteria that has just eaten cannot die for the next 10 steps.
+
+
+COLONY:
+Each bacteria belongs to one colony. The area of the colony is defined as the area of the convex hull 
+formed by the bacteria. Different bacterial colonies can interact with each other if their convex hull 
+overlaps( see Note 1 below ). The interaction between colonies can be different. 
+
+If the colonies interact in synergy, once they overlap they merge together in a single colony.
+If colonies compete, if they overlap bacteria kill each other through a fight (all within the same evolution step) 
+until their colonies do not overlap anymore in the following way: two bacteria (1 and 2), taken one each 
+randomly from the two different colonies fight each other based on their strength (S_1 or S_2). In practice, 
+the surviror is taken randomly with a probability that is proportional to p_1 =  S_1 / ( S_1 + S_2 ) and 
+p_2 = 1 - p_1
+
+
+PREPARE THE SYSTEM in a configuration
+
+SIMULATE TO MEASURE T_1/2, the time it takes so that the total number of bacteria decreases to half its
+initial value.
+
+FIND A VALUE FOR T_1/2 for 100 different (N,d) combinations. You must run many simulations, until the 
+value found for T_(1/2) is known with a standard deviation smaller than 0.2 T_1/2.
+
+Interpolate T_1/2( N, dd ) and use the interpolation function to determine its minimum
+
+Finally, make sure to print out the system state and visualize it as a series of convex hulls every 200 evolution
+steps. Besides that, also print another file where the position of each of the bacteria in the colony is given,
+as well as the food. You can do that in a file with format:
+Row 1: N_bacteria (total number) + N_food
+Row 2: empty
+Row 3: Symbol x y z
+(the same for ) N_bacteria + N_food + 2 rows.
+Symbol can be any element from the periodic table. Bacteria of different colonies should have different symbols.
+Food should have a different symbol too.
+
+
+
+
+SYSTEM PREPARATION:
+
+
+
+
+
+VALUE OF PARAMETERS:
+
+k_die(0) = 5
+k_move = 50
+k_replicate = 5
+R_eat = 1
+
+Surface is a 2D square of 10 x 10
+
+Simulation 1: 
+5 synergistic colonies of 100 bacteria each. Initially, each colony should be put randomly on the surface 
+so that all its bacteria are in a circle of radius 2. Within the circle, bacteria have random positions
+
+Simulation 2:
+As in in Simulation 1, but for competitive colonies. 
+
+Food:
+Put in each case 2000 food particles randomly on the surface.
+
+Strength (for fights only): the strength of a bacteria in a colony is given by 
+
+10 / N_life + sqrt( N_colony ) + 10 / N_no_eat
+
+where N_life is the evolution steps passed since the bacteria is born (note that once a bacteria divide
+one of the copy has age 0, the other keeps its previous age ), N_colony is the number of bacteria in the 
+colony and N_no_eat the number of steps passed since the bacteria has eaten.
+
+
+
+
+
+
